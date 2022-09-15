@@ -48,12 +48,9 @@ public class RecipientRegistrationActivity extends AppCompatActivity {
         loader = new ProgressDialog(this);
         mAuth = FirebaseAuth.getInstance();
 
-        binding.backbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(RecipientRegistrationActivity.this, loginActivity.class);
-                startActivity(intent);
-            }
+        binding.backbutton.setOnClickListener(view -> {
+            Intent intent = new Intent(RecipientRegistrationActivity.this, loginActivity.class);
+            startActivity(intent);
         });
 
         binding.profileImage.setOnClickListener(new View.OnClickListener() {
@@ -147,6 +144,7 @@ public class RecipientRegistrationActivity extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
                                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                    assert bitmap != null;
                                     bitmap.compress(Bitmap.CompressFormat.JPEG,20,byteArrayOutputStream);
                                     byte[] data = byteArrayOutputStream.toByteArray();
                                     UploadTask uploadTask = filePath.putBytes(data);

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="#D50F36"
+    android:background="#F10152"
     tools:context=".DonorRegistrationActivity">
 
     <androidx.cardview.widget.CardView

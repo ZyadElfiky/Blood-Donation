@@ -1,10 +1,5 @@
 package com.example.bloodapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,8 +8,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 
 import com.example.bloodapp.databinding.ActivityDonorRegistrationBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -41,6 +40,7 @@ public class DonorRegistrationActivity extends AppCompatActivity {
     private ProgressDialog loader;
     private FirebaseAuth mAuth;
     private DatabaseReference mRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +61,7 @@ public class DonorRegistrationActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
-                startActivityForResult(intent,1);
+                startActivityForResult(intent, 1);
             }
         });
 
@@ -96,58 +96,56 @@ public class DonorRegistrationActivity extends AppCompatActivity {
                     return;
                 }
                 if (bloodGroup.equals("Select your blood group")) {
-                    Toast.makeText(DonorRegistrationActivity.this, "Select blood group",Toast.LENGTH_LONG).show();
+                    Toast.makeText(DonorRegistrationActivity.this, "Select blood group", Toast.LENGTH_LONG).show();
                     return;
                 } else {
                     loader.setMessage("Registering you...");
                     loader.setCanceledOnTouchOutside(false);
                     loader.show();
 
-                    mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(!task.isSuccessful()){
+                            if (!task.isSuccessful()) {
                                 String error = task.getException().toString();
-                                Toast.makeText(DonorRegistrationActivity.this,"Error "+ error,Toast.LENGTH_LONG).show();
-                            }
-                            else{
+                                Toast.makeText(DonorRegistrationActivity.this, "Error " + error, Toast.LENGTH_LONG).show();
+                            } else {
                                 String currentUserID = mAuth.getCurrentUser().getUid();
                                 mRef = FirebaseDatabase.getInstance().getReference().child("users").child(currentUserID);
                                 HashMap userInfo = new HashMap();
-                                userInfo.put("id",currentUserID);
-                                userInfo.put("name",fullName);
-                                userInfo.put("email",email);
-                                userInfo.put("idnumber",idNumber);
-                                userInfo.put("phonenumber",phoneNumber);
-                                userInfo.put("bloodgroup",bloodGroup);
-                                userInfo.put("type","donor");
-                                userInfo.put("search","donor"+ bloodGroup);
+                                userInfo.put("id", currentUserID);
+                                userInfo.put("name", fullName);
+                                userInfo.put("email", email);
+                                userInfo.put("idnumber", idNumber);
+                                userInfo.put("phonenumber", phoneNumber);
+                                userInfo.put("bloodgroup", bloodGroup);
+                                userInfo.put("type", "donor");
+                                userInfo.put("search", "donor" + bloodGroup);
 
                                 mRef.updateChildren(userInfo).addOnCompleteListener(new OnCompleteListener() {
                                     @Override
                                     public void onComplete(@NonNull Task task) {
-                                        if(task.isSuccessful()){
-                                            Toast.makeText(DonorRegistrationActivity.this,"Data set Successfully",Toast.LENGTH_LONG).show();
-                                        }else{
-                                            Toast.makeText(DonorRegistrationActivity.this,task.getException().toString(),Toast.LENGTH_LONG).show();
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(DonorRegistrationActivity.this, "Data set Successfully", Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(DonorRegistrationActivity.this, task.getException().toString(), Toast.LENGTH_LONG).show();
                                         }
                                         finish();
-                                        //loader.dismiss();
+
                                     }
                                 });
-                                if(resultUri != null){
+                                if (resultUri != null) {
                                     final StorageReference filePath = FirebaseStorage.getInstance().getReference()
                                             .child("profile images").child(currentUserID);
                                     Bitmap bitmap = null;
                                     try {
-                                        bitmap = MediaStore.Images.Media.getBitmap(getApplication().getContentResolver(),resultUri);
+                                        bitmap = MediaStore.Images.Media.getBitmap(getApplication().getContentResolver(), resultUri);
 
-                                    }catch(IOException e)
-                                    {
+                                    } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG,20,byteArrayOutputStream);
+                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, byteArrayOutputStream);
                                     byte[] data = byteArrayOutputStream.toByteArray();
                                     UploadTask uploadTask = filePath.putBytes(data);
                                     uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -161,20 +159,20 @@ public class DonorRegistrationActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                                            if(taskSnapshot.getMetadata() != null && taskSnapshot.getMetadata().getReference()!= null){
+                                            if (taskSnapshot.getMetadata() != null && taskSnapshot.getMetadata().getReference() != null) {
                                                 Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
                                                 result.addOnSuccessListener(new OnSuccessListener<Uri>() {
                                                     @Override
                                                     public void onSuccess(Uri uri) {
                                                         String imageUri = uri.toString();
                                                         Map newImageMap = new HashMap();
-                                                        newImageMap.put("profilepictureuri",imageUri);
+                                                        newImageMap.put("profilepictureuri", imageUri);
                                                         mRef.updateChildren(newImageMap).addOnCompleteListener(new OnCompleteListener() {
                                                             @Override
                                                             public void onComplete(@NonNull Task task) {
-                                                                if(task.isSuccessful()){
+                                                                if (task.isSuccessful()) {
                                                                     Toast.makeText(DonorRegistrationActivity.this, "Image url added to database", Toast.LENGTH_SHORT).show();
-                                                                }else{
+                                                                } else {
                                                                     Toast.makeText(DonorRegistrationActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
                                                                 }
                                                             }
@@ -186,7 +184,7 @@ public class DonorRegistrationActivity extends AppCompatActivity {
 
                                         }
                                     });
-                                    Intent intent = new Intent(DonorRegistrationActivity.this,MainActivity.class);
+                                    Intent intent = new Intent(DonorRegistrationActivity.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
                                     loader.dismiss();
@@ -208,8 +206,7 @@ public class DonorRegistrationActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1 && resultCode == RESULT_OK && data !=null)
-        {
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
             resultUri = data.getData();
             binding.profileImage.setImageURI(resultUri);
         }
